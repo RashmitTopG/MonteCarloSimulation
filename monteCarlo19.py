@@ -39,19 +39,19 @@ def monte_carlo_simulation(num_simulations=5000):
     adjusted_sales = simulated_products_sold * (1 - simulated_defect_rates)
     revenues = np.maximum(0, (simulated_prices * adjusted_sales) - (simulated_shipping_costs + simulated_manufacturing_costs + simulated_lead_times * 0.05))
 
-    return revenues, simulated_lead_times * 0.05, simulated_defect_rates, simulated_shipping_costs, simulated_manufacturing_costs
+    return (revenues, simulated_lead_times * 0.05, simulated_defect_rates,
+            simulated_shipping_costs, simulated_manufacturing_costs)
 
 # Create the Dash app
 app = Dash(__name__)
 
+# Layout of the dashboard with embedded CSS
 # Layout of the dashboard with embedded CSS
 app.layout = html.Div(
     style={
         'maxWidth': '1200px',
         'margin': 'auto',
         'padding': '20px',
-        'backgroundColor': '#f8f9fa',
-        'fontFamily': 'Arial, sans-serif'
     },
     children=[
         html.H1(
@@ -95,55 +95,214 @@ app.layout = html.Div(
                 'textAlign': 'center',
                 'marginBottom': '20px',
                 'fontWeight': 'bold',
-                'backgroundColor': '#d1ecf1',
+                'backgroundColor': '#d1ecf1',  # Original simulation results color
                 'borderLeft': '4px solid #17a2b8',
                 'padding': '10px',
                 'borderRadius': '5px',
                 'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)'
             }
         ),
+
+        # Revenue Distribution Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="simulation-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'}),
-                html.Div(dcc.Graph(id="lead-time-risk-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'display': 'flex', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0'  # Adjusted margin for spacing
+                ,'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="simulation-graph", style={'height': '400px'}),
+                html.P("This graph shows the distribution of revenues generated from simulations. The histogram illustrates how likely different revenue values are based on simulated outcomes.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
+
+        # Lead Time Risk Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="defect-rate-risk-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'}),
-                html.Div(dcc.Graph(id="shipping-cost-risk-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'display': 'flex', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="lead-time-risk-graph", style={'height': '400px'}),
+                html.P("This graph represents the lead time risk in the supply chain. Longer lead times indicate delays in product delivery, which can increase overall risk.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
+
+        # Defect Rate Risk Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="manufacturing-cost-risk-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'}),
-                html.Div(dcc.Graph(id="box-plot-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'display': 'flex', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="defect-rate-risk-graph", style={'height': '400px'}),
+                html.P("The defect rate graph shows the likelihood of producing defective products in each simulation, which impacts sales and profitability.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
+
+        # Shipping Cost Risk Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="cdf-plot-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'}),
-                html.Div(dcc.Graph(id="bar-chart-graph", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'display': 'flex', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="shipping-cost-risk-graph", style={'height': '400px'}),
+                html.P("This graph illustrates the risk associated with shipping costs. Higher shipping costs reduce profit margins and increase the total cost of delivery.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
+
+        # Manufacturing Cost Risk Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="defect-rate-histogram", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'}),
-                html.Div(dcc.Graph(id="pie-chart-risk-factors", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'display': 'flex', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="manufacturing-cost-risk-graph", style={'height': '400px'}),
+                html.P("This graph demonstrates the risk from manufacturing costs. High manufacturing costs can significantly impact the overall profitability of the business.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
+
+        # Box Plot Graph
         html.Div(
-            [
-                html.Div(dcc.Graph(id="major-risk-factor-bar-chart", style={'height': '450px'}), style={'flex': '1', 'margin': '10px'})
-            ],
-            style={'textAlign': 'center', 'marginBottom': '20px'}
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="box-plot-graph", style={'height': '400px'}),
+                html.P("The box plot summarizes the distribution of key supply chain variables, including revenues, lead times, defect rates, shipping, and manufacturing costs.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
         ),
-        # Add the conclusion section here
+
+        # CDF Plot Graph
+        html.Div(
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="cdf-plot-graph", style={'height': '400px'}),
+                html.P("This graph is the Cumulative Distribution Function (CDF) of the simulated revenues, which shows the probability that the revenue is less than or equal to a given value.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
+        ),
+
+        # Bar Chart Graph
+        html.Div(
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="bar-chart-graph", style={'height': '400px'}),
+                html.P("The bar chart represents the average contribution of each risk factor to the overall risk in the simulations. It helps in identifying which risk factors have the greatest impact.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
+        ),
+
+        # Defect Rate Histogram
+        html.Div(
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="defect-rate-histogram", style={'height': '400px'}),
+                html.P("This histogram provides a more detailed look at the frequency distribution of defect rates across the simulations.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
+        ),
+
+        # Pie Chart of Risk Factors
+        html.Div(
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'
+            },
+            children=[
+                dcc.Graph(id="pie-chart-risk-factors", style={'height': '400px'}),
+                html.P("The pie chart breaks down the relative contribution of each risk factor, showing the proportion each factor contributes to total risk.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
+        ),
+
+        # Major Risk Factor Bar Chart
+        html.Div(
+            style={
+                'backgroundColor': 'white',
+                'borderRadius': '5px',
+                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+                'padding': '10px',
+                'margin': '10px 0',
+                'display': 'flex',  # Use flexbox
+        'flexDirection': 'column',  # Stack children vertically
+        'alignItems': 'center'  
+                
+            },
+            children=[
+                dcc.Graph(id="major-risk-factor-bar-chart", style={'height': '400px' , 'width': '800px' }),
+                html.P("This bar chart shows the major risk factors influencing overall business risk. It highlights which factors contribute most significantly to risk.", style={'textAlign': 'center', 'fontSize': '1.3em'})
+            ]
+        ),
+
+        # Conclusion Section
         html.Div(
             style={
                 'backgroundColor': '#fff3cd',
@@ -151,7 +310,8 @@ app.layout = html.Div(
                 'padding': '20px',
                 'borderRadius': '5px',
                 'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
-                'marginBottom': '20px'
+                'marginBottom': '20px',
+                
             },
             children=[
                 html.H2("Conclusion", style={'color': '#856404', 'textAlign': 'center', 'marginBottom': '10px'}),
@@ -161,7 +321,7 @@ app.layout = html.Div(
                     for the vast majority of total risk (85%). On the other hand, while revenues are skewed, a small number 
                     of outliers account for high revenues, with most revenue values falling below 100k.
                     """,
-                    style={'color': '#856404', 'fontSize': '1.1em', 'textAlign': 'justify'}
+                    style={'color': '#856404', 'fontSize': '1.3em', 'textAlign': 'justify'}
                 ),
                 html.P(
                     """
@@ -170,12 +330,15 @@ app.layout = html.Div(
                     beyond the lower range should be prioritized, particularly by addressing the extreme cases that generate 
                     higher revenue outliers.
                     """,
-                    style={'color': '#856404', 'fontSize': '1.1em', 'textAlign': 'justify'}
+                    style={'color': '#856404', 'fontSize': '1.3em', 'textAlign': 'justify'}
                 )
             ]
         )
     ]
 )
+
+
+
 
 # Callback to update the simulation results and graph dynamically
 @app.callback(
@@ -191,17 +354,17 @@ app.layout = html.Div(
      Output('defect-rate-histogram', 'figure'),
      Output('pie-chart-risk-factors', 'figure'),
      Output('major-risk-factor-bar-chart', 'figure')],
-    Input('sim-slider', 'value')
+    [Input('sim-slider', 'value')]
 )
 def update_simulation(num_simulations):
-    revenues, lead_time_costs, defect_rates, shipping_costs, manufacturing_costs = monte_carlo_simulation(num_simulations)
+    revenues, lead_times, defect_rates, shipping_costs, manufacturing_costs = monte_carlo_simulation(num_simulations)
 
     # Calculate statistics
     mean_revenue = np.mean(revenues)
     std_revenue = np.std(revenues)
 
-    mean_lead_time_cost = np.mean(lead_time_costs)
-    std_lead_time_cost = np.std(lead_time_costs)
+    mean_lead_time_cost = np.mean(lead_time)
+    std_lead_time_cost = np.std(lead_time)
 
     mean_defect_rate = np.mean(defect_rates)
     std_defect_rate = np.std(defect_rates)
@@ -222,48 +385,77 @@ def update_simulation(num_simulations):
         f"Mean Manufacturing Cost: ${mean_manufacturing_cost:,.2f} | Std Dev: ${std_manufacturing_cost:,.2f}\n"
     )
 
-    # Create graphs
-    simulation_fig = px.histogram(revenues, title="Revenue Distribution", nbins=50)
-    lead_time_fig = px.histogram(lead_time_costs, title="Lead Time Costs Distribution", nbins=50)
-    defect_rate_fig = px.histogram(defect_rates, title="Defect Rates Distribution", nbins=50)
-    shipping_cost_fig = px.histogram(shipping_costs, title="Shipping Costs Distribution", nbins=50)
-    manufacturing_cost_fig = px.histogram(manufacturing_costs, title="Manufacturing Costs Distribution", nbins=50)
 
-    # Box plot
-    box_fig = px.box(revenues, title="Revenue Box Plot")
-    # CDF plot
-    cdf_fig = px.histogram(revenues, title="Revenue CDF", cumulative=True, nbins=50)
-    # Bar chart for major risk factors
-    risk_factors = {
-        'Lead Time': mean_lead_time_cost,
-        'Defect Rate': mean_defect_rate,
-        'Shipping Costs': mean_shipping_cost,
-        'Manufacturing Costs': mean_manufacturing_cost,
+    fig_revenue = px.histogram(revenues, nbins=50, title='Revenue Distribution',
+                               labels={'x': 'Revenue', 'y': 'Frequency'},
+                               template='plotly_dark')
+    fig_lead_time = px.histogram(lead_times, nbins=50, title='Lead Time Distribution',
+                                 labels={'x': 'Lead Time', 'y': 'Frequency'},
+                                 template='plotly_dark')
+    fig_defect_rate = px.histogram(defect_rates, nbins=50, title='Defect Rate Distribution',
+                                   labels={'x': 'Defect Rate', 'y': 'Frequency'},
+                                   template='plotly_dark')
+    fig_shipping_cost = px.histogram(shipping_costs, nbins=50, title='Shipping Cost Distribution',
+                                     labels={'x': 'Shipping Costs', 'y': 'Frequency'},
+                                     template='plotly_dark')
+    fig_manufacturing_cost = px.histogram(manufacturing_costs, nbins=50, title='Manufacturing Cost Distribution',
+                                          labels={'x': 'Manufacturing Costs', 'y': 'Frequency'},
+                                          template='plotly_dark')
+
+    df_box = pd.DataFrame({
+        'Revenues': revenues,
+        'Lead Times': lead_times,
+        'Defect Rates': defect_rates,
+        'Shipping Costs': shipping_costs,
+        'Manufacturing Costs': manufacturing_costs
+    })
+
+    fig_box_plot = px.box(df_box, title="Box Plot of Supply Chain Variables",
+                          template='plotly_dark')
+    fig_cdf = px.ecdf(revenues, title='CDF of Revenue Distribution',
+                      labels={'x': 'Revenue', 'y': 'Cumulative Probability'},
+                      template='plotly_dark')
+
+    risk_contributions = {
+        'Lead Times': np.mean(lead_times),
+        'Defect Rates': np.mean(defect_rates),
+        'Shipping Costs': np.mean(shipping_costs),
+        'Manufacturing Costs': np.mean(manufacturing_costs)
     }
-    bar_fig = px.bar(x=list(risk_factors.keys()), y=list(risk_factors.values()), title="Major Risk Factors")
 
-    # Defect rate histogram
-    defect_rate_histogram = px.histogram(defect_rates, title="Defect Rates Histogram", nbins=50)
-    # Pie chart for distribution of risk factors
-    pie_fig = px.pie(names=list(risk_factors.keys()), values=list(risk_factors.values()), title="Distribution of Risk Factors")
+    fig_bar_chart = px.bar(x=list(risk_contributions.keys()), y=list(risk_contributions.values()),
+                           title="Average Contribution of Each Risk Factor",
+                           labels={'x': 'Risk Factor', 'y': 'Average Value'},
+                           template='plotly_dark')
 
-    # Major risk factor bar chart
-    major_risk_factor_fig = px.bar(x=list(risk_factors.keys()), y=list(risk_factors.values()), title="Major Risk Factor Comparison")
+    fig_defect_rate_hist = px.histogram(defect_rates, nbins=50, title='Histogram of Defect Rates',
+                                        labels={'x': 'Defect Rate', 'y': 'Frequency'},
+                                        template='plotly_dark')
 
-    return (
+    fig_pie_risk_factors = px.pie(names=list(risk_contributions.keys()), values=list(risk_contributions.values()),
+                                  title='Proportional Contribution of Risk Factors',
+                                  template='plotly_dark')
+
+    fig_major_risk = px.bar(x=list(risk_contributions.keys()), y=list(risk_contributions.values()),
+                            title="Major Risk Factor Analysis",
+                            labels={'x': 'Risk Factor', 'y': 'Impact'},
+                            template='plotly_dark')
+
+    return [
         simulation_results_text,
-        simulation_fig,
-        lead_time_fig,
-        defect_rate_fig,
-        shipping_cost_fig,
-        manufacturing_cost_fig,
-        box_fig,
-        cdf_fig,
-        bar_fig,
-        defect_rate_histogram,
-        pie_fig,
-        major_risk_factor_fig
-    )
+        fig_revenue,
+        fig_lead_time,
+        fig_defect_rate,
+        fig_shipping_cost,
+        fig_manufacturing_cost,
+        fig_box_plot,
+        fig_cdf,
+        fig_bar_chart,
+        fig_defect_rate_hist,
+        fig_pie_risk_factors,
+        fig_major_risk
+    ]
 
+# Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
