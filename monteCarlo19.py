@@ -4,7 +4,7 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 
 # Load dataset
-data = pd.read_csv('C:/Users/Rashmit Mhatre/Downloads/archive564/supply_chain_data.csv')
+data = pd.read_csv('supply_chain_data.csv')
 
 # Key variables for risk analysis
 price = data['Price']
@@ -52,6 +52,7 @@ app.layout = html.Div(
         'maxWidth': '1200px',
         'margin': 'auto',
         'padding': '20px',
+        
     },
     children=[
         html.H1(
