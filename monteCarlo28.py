@@ -232,61 +232,74 @@ app.layout = html.Div(
 
         # ChatGPT-like Feature Section
         html.Div(
-            style={
-                'backgroundColor': '#f1f1f1',
-                'padding': '20px',
-                'borderRadius': '5px',
-                'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
-                'marginBottom': '20px'
-            },
-            children=[
-                html.H2("Ask AI Assistant", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Textarea(
-                    id='user-query',
-                    placeholder='Type your question here...',
-                    style={
-                        'width': '100%',
-                        'height': '100px',
-                        'marginBottom': '20px',
-                        'padding': '10px',
-                        'fontSize': '1em',
-                        'borderRadius': '5px',
-                        'border': '1px solid #ccc'
-                    }
-                ),
-                html.Button(
-                    'Submit',
-                    id='submit-query',
-                    n_clicks=0,
-                    style={
-                        'display': 'block',
-                        'margin': '0 auto 20px auto',
-                        'padding': '10px 20px',
-                        'fontSize': '1em',
-                        'borderRadius': '5px',
-                        'border': 'none',
-                        'backgroundColor': '#17a2b8',
-                        'color': '#fff',
-                        'cursor': 'pointer'
-                    }
-                ),
-                html.Div(
-                    id='ai-response',
-                    style={
-        'backgroundColor': '#ffffff',  # White background for cleanliness
+    style={
+        'backgroundColor': '#f1f1f1',
         'padding': '20px',
-        'border': '1px solid #ccc',  # Light border for definition
-        'borderRadius': '5px',  # Slightly rounded corners
-        'minHeight': '200px',  # Increased height for more content
-        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',  # Subtle shadow for depth
-        'fontSize': '1em',  # Base font size
-        'fontFamily': 'Arial, sans-serif',  # Consistent font style
-        'lineHeight': '1.6',  # Improved readability
-        'color': '#333'  # Dark text for contrast
-    }
-                )
-            ]
+        'borderRadius': '5px',
+        'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+        'marginBottom': '20px'
+    },
+    children=[
+        html.H2("Ask AI Assistant", style={'textAlign': 'center', 'marginBottom': '20px'}),
+        
+        # Text area for user query
+        dcc.Textarea(
+            id='user-query',
+            placeholder='Type your question here...',
+            style={
+                'width': '100%',
+                'height': '100px',
+                'marginBottom': '20px',
+                'padding': '10px',
+                'fontSize': '1em',
+                'borderRadius': '5px',
+                'border': '1px solid #ccc'
+            }
+        ),
+        
+        # Submit button
+        html.Button(
+            'Submit',
+            id='submit-query',
+            n_clicks=0,
+            style={
+                'display': 'block',
+                'margin': '0 auto 20px auto',
+                'padding': '10px 20px',
+                'fontSize': '1em',
+                'borderRadius': '5px',
+                'border': 'none',
+                'backgroundColor': '#17a2b8',
+                'color': '#fff',
+                'cursor': 'pointer'
+            }
+        ),
+        
+        # AI response area
+        html.Div(
+            id='ai-response',
+            style={
+                'backgroundColor': '#ffffff',
+                'padding': '20px',
+                'border': '1px solid #ccc',
+                'borderRadius': '5px',
+                'minHeight': '100px',
+                'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                'fontSize': '1em'
+            }
+        ),
+        
+        # Image display area (conditionally rendered)
+        html.Div(
+            id='ai-response-image',
+            style={
+                'textAlign': 'center',
+                'marginTop': '20px'
+            }
         )
+    ]
+)
+
     ]
 )
 
@@ -317,6 +330,7 @@ app.layout = html.Div(
         Output('major-risk-factor-bar-chart', 'figure'),
         Output('major-risk-factor-description', 'children'),
         Output('ai-response', 'children'),
+        Output('ai-response-image', 'children'),
     ],
     [Input('submit-query', 'n_clicks'),
      Input('sim-slider', 'value')],
@@ -325,6 +339,7 @@ app.layout = html.Div(
 def update_ai_response(n_clicks, num_simulations, query):
     # Initialize the AI response
     ai_reply = "Type your question and click submit to get a response."
+    image_url = None  # To hold the image URL if found
     
     # Generate AI response if the button is clicked
     if n_clicks > 0:
@@ -332,6 +347,13 @@ def update_ai_response(n_clicks, num_simulations, query):
             model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content(query)
             ai_reply = response.text if response.text else "No response generated."
+            
+            # Check if the response contains an image URL
+            words = ai_reply.split()
+            for word in words:
+                if word.startswith('http') and (word.endswith('.jpg') or word.endswith('.png') or word.endswith('.jpeg')):
+                    image_url = word
+                    break
         else:
             ai_reply = "Please enter a question before submitting."
 
@@ -343,11 +365,15 @@ def update_ai_response(n_clicks, num_simulations, query):
     fig_cdf, cdf_description, fig_bar_chart, bar_chart_description, fig_defect_rate_hist, defect_rate_histogram_description,
     fig_pie_chart, pie_chart_description, fig_major_risk_factor, major_risk_factor_description) = update_simulation(num_simulations)
 
-    return (simulation_results_text, fig_revenue, revenue_description, fig_lead_time, lead_time_description,
-    fig_defect_rate, defect_rate_description, fig_shipping_cost, shipping_cost_description,
-    fig_manufacturing_cost, manufacturing_cost_description, fig_box_plot, box_plot_description,
-    fig_cdf, cdf_description, fig_bar_chart, bar_chart_description, fig_defect_rate_hist, defect_rate_histogram_description,
-    fig_pie_chart, pie_chart_description, fig_major_risk_factor, major_risk_factor_description, ai_reply)
+    return (
+        simulation_results_text, fig_revenue, revenue_description, fig_lead_time, lead_time_description,
+        fig_defect_rate, defect_rate_description, fig_shipping_cost, shipping_cost_description,
+        fig_manufacturing_cost, manufacturing_cost_description, fig_box_plot, box_plot_description,
+        fig_cdf, cdf_description, fig_bar_chart, bar_chart_description, fig_defect_rate_hist, defect_rate_histogram_description,
+        fig_pie_chart, pie_chart_description, fig_major_risk_factor, major_risk_factor_description, ai_reply, image_url
+    )
+
+
 
 def update_simulation(num_simulations):
     revenues, lead_times, defect_rates, shipping_costs_sim, manufacturing_costs_sim = monte_carlo_simulation(num_simulations)
